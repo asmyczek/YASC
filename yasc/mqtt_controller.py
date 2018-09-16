@@ -138,18 +138,19 @@ class MQTTController:
             self.__client = None
 
     def send_available_state(self, state=None):
-        zones = []
-        for zone_info in CONFIG.active_zones:
-            zones.append(zone_info.zone)
-        for zone in range(1, 9):
-            if state is None:
-                msg = CMD.ONLINE if zone in zones else CMD.OFFLINE
-            else:
-                msg = state
-            self.__client.publish('{0}/zone/{1}/available'.format(self.__conf.topic, zone),
-                                  msg.name,
-                                  qos=2,
-                                  retain=False)
+        if self.__client is not None:
+            zones = []
+            for zone_info in CONFIG.active_zones:
+                zones.append(zone_info.zone)
+            for zone in range(1, 9):
+                if state is None:
+                    msg = CMD.ONLINE if zone in zones else CMD.OFFLINE
+                else:
+                    msg = state
+                self.__client.publish('{0}/zone/{1}/available'.format(self.__conf.topic, zone),
+                                      msg.name,
+                                      qos=2,
+                                      retain=False)
 
     def zone_on(self, zone):
         if self.__client is not None:
