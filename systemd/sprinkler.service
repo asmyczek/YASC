@@ -1,0 +1,15 @@
+# Drop it ini /etc/systemd/system/multi-user.target.wants/
+[Unit]
+Description=Sprinkler
+After=multi-user.target
+ 
+[Service]
+Type=simple
+Environment=SPRINKLER_ENV=prod
+Environment=SPRINKLER_LOG_LEVEL=info
+WorkingDirectory=/home/admin/sprinkler
+ExecStart=/home/admin/sprinkler/start_yasc.sh
+Restart=on-abort
+ 
+[Install]
+WantedBy=multi-user.target

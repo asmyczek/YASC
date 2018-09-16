@@ -1,0 +1,680 @@
+# -----------------------------
+# Controller for Home Assistant
+# -----------------------------
+
+group:
+
+  sprinkler:
+    name: Sprinkler
+    view: yes
+    entities:
+      - group.sprinkler_status
+      - group.sprinkler_zones
+      - group.sprinkler_schedule
+      - group.sprinkler_switches
+
+  sprinkler_zones:
+    name: Zones
+    control: hidden
+    entities:
+      - input_boolean.water_zone1
+      - input_boolean.water_zone2
+      - input_boolean.water_zone3
+      - input_boolean.water_zone4
+      - input_boolean.water_zone5
+      - input_boolean.water_zone6
+
+  sprinkler_switches:
+    name: Zone switches
+    control: hidden
+    entities:
+      - switch.zone1
+      - switch.zone2
+      - switch.zone3
+      - switch.zone4
+      - switch.zone5
+      - switch.zone6
+
+  sprinkler_schedule:
+    name: Schedule
+    control: hidden
+    entities:
+      - input_boolean.sprinkler_schedule_enabled
+      - input_select.sprinkler_watering_days
+      - input_select.sprinkler_start_time
+      - input_number.duration_zone1
+      - input_number.duration_zone2
+      - input_number.duration_zone3
+      - input_number.duration_zone4
+      - input_number.duration_zone5
+      - input_number.duration_zone6
+
+  sprinkler_status:
+    name: Status
+    control: hidden
+    entities:
+      - input_boolean.run_manual_cycle
+      - sensor.sprinkler_next_run
+      - sensor.sprinkler_status
+      - sensor.watering_zone
+      - sensor.sprinkler_last_run
+
+# ------
+# Inputs
+# ------
+
+input_boolean:
+
+  sprinkler_schedule_enabled:
+    name: Enable schedule
+    icon: mdi:calendar
+
+  run_manual_cycle:
+    name: Run manual cycle
+    icon: mdi:update
+
+  cycle_running:
+    name: Running cycle
+    initial: off
+
+  zone_running:
+    name: Running zone
+    initial: off
+
+  water_zone1:
+    name: Island
+    icon: mdi:play
+    initial: off
+
+  water_zone2:
+    name: Palms
+    icon: mdi:play
+    initial: off
+
+  water_zone3:
+    name: Lawn
+    icon: mdi:play
+    initial: off
+
+  water_zone4:
+    name: Entrance side
+    icon: mdi:play
+    initial: off
+
+  water_zone5:
+    name: Entrance wall
+    icon: mdi:play
+    initial: off
+
+  water_zone6:
+    name: Outside
+    icon: mdi:play
+    initial: off
+
+input_select:
+
+  sprinkler_watering_days:
+    name: Schedule
+    options:
+      - 'Daily'
+      - 'Alternate'
+    icon: mdi:calendar
+
+  sprinkler_start_time:
+    name: Start time
+    options:
+      - '02:00'
+      - '03:00'
+      - '04:00'
+      - '05:00'
+      - '06:00'
+      - '20:00'
+      - '21:00'
+      - '22:00'
+      - '23:00'
+    icon: mdi:alarm
+
+input_number:
+  duration_zone1:
+    name: Island
+    min: 0
+    max: 30
+    step: 1
+    icon: mdi:camera-timer
+
+  duration_zone2:
+    name: Palms
+    min: 0
+    max: 30
+    step: 1
+    icon: mdi:camera-timer
+
+  duration_zone3:
+    name: Lawn
+    min: 0
+    max: 30
+    step: 1
+    icon: mdi:camera-timer
+
+  duration_zone4:
+    name: Ent-side
+    min: 0
+    max: 30
+    step: 1
+    icon: mdi:camera-timer
+
+  duration_zone5:
+    name: Ent-wall
+    min: 0
+    max: 30
+    step: 1
+    icon: mdi:camera-timer
+
+  duration_zone6:
+    name: Outside
+    min: 0
+    max: 30
+    step: 1
+    icon: mdi:camera-timer
+
+input_datetime:
+  sprinkler_next_run:
+    has_date: true
+    has_time: true
+
+  sprinkler_last_run:
+    has_date: true
+    has_time: true
+
+input_text:
+  cycle_current_zone:
+    name: Current zone
+
+# ------
+# Timers
+# ------
+
+timer:
+  zone_duration:
+    name: Time remaining
+
+# -------
+# Sensors
+# -------
+sensor:
+  - platform: template
+    sensors:
+
+      sprinkler_next_run:
+        friendly_name: "Next run time"
+        value_template: >
+          {% if is_state('input_boolean.sprinkler_schedule_enabled', 'on') %}
+            {{ (as_timestamp(states.input_datetime.sprinkler_next_run.state)) | timestamp_custom("%a %d %h at %H:%M") }}
+          {% else %}
+            None
+          {% endif %}
+        icon_template: mdi:clock-start
+
+      sprinkler_status:
+        friendly_name: "Status"
+        value_template: >
+          {% if is_state('input_boolean.cycle_running', 'on') %}
+            Running cycle
+          {% elif is_state('input_boolean.zone_running', 'on') %}
+            Running zone
+          {% else %}
+            Not running
+          {% endif %}
+        icon_template: >
+          {% if is_state('input_boolean.cycle_running', 'on') or is_state('input_boolean.zone_running', 'on') %}
+            mdi:run
+          {% else %}
+            mdi:human-handsdown
+          {% endif %}
+
+      watering_zone:
+        friendly_name: "Current zone"
+        value_template: "{{ states('input_text.cycle_current_zone') }}"
+        icon_template: mdi:square-inc
+
+      sprinkler_last_run:
+        friendly_name: "Last run"
+        value_template: >
+          {{ (as_timestamp(states.input_datetime.sprinkler_last_run.state)) | timestamp_custom("%a %d %h at %H:%M") }}
+        icon_template: mdi:update
+
+
+# --------
+# Switches
+# --------
+
+switch:
+
+  - platform: mqtt
+    name: zone1
+    state_topic: "home/yasc/zone/1/status"
+    command_topic: "home/yasc/zone/1/set"
+    availability_topic: "home/yasc/zone/1/available"
+    qos: 2
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "ONLINE"
+    payload_not_available: "OFFLINE"
+    retain: false
+
+
+  - platform: mqtt
+    name: zone2
+    state_topic: "home/yasc/zone/4/status"
+    command_topic: "home/yasc/zone/4/set"
+    availability_topic: "home/yasc/zone/4/available"
+    qos: 2
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "ONLINE"
+    payload_not_available: "OFFLINE"
+    retain: false
+
+  - platform: mqtt
+    name: zone3
+    state_topic: "home/yasc/zone/5/status"
+    command_topic: "home/yasc/zone/5/set"
+    availability_topic: "home/yasc/zone/5/available"
+    qos: 2
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "ONLINE"
+    payload_not_available: "OFFLINE"
+    retain: false
+
+  - platform: mqtt
+    name: zone4
+    state_topic: "home/yasc/zone/6/status"
+    command_topic: "home/yasc/zone/6/set"
+    availability_topic: "home/yasc/zone/6/available"
+    qos: 2
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "ONLINE"
+    payload_not_available: "OFFLINE"
+    retain: false
+
+  - platform: mqtt
+    name: zone5
+    state_topic: "home/yasc/zone/7/status"
+    command_topic: "home/yasc/zone/7/set"
+    availability_topic: "home/yasc/zone/7/available"
+    qos: 2
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "ONLINE"
+    payload_not_available: "OFFLINE"
+    retain: false
+
+  - platform: mqtt
+    name: zone6
+    state_topic: "home/yasc/zone/8/status"
+    command_topic: "home/yasc/zone/8/set"
+    availability_topic: "home/yasc/zone/8/available"
+    qos: 2
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "ONLINE"
+    payload_not_available: "OFFLINE"
+    retain: false
+
+
+# ----------
+# Automation
+# ----------
+
+automation:
+
+  - alias: Set next run time
+    initial_state: 'on'
+    trigger:
+      - platform: state
+        entity_id: input_boolean.sprinkler_schedule_enabled
+        to: 'on'
+      - platform: state
+        entity_id: input_select.sprinkler_start_time
+    action:
+      - service: input_datetime.set_datetime
+        data_template:
+          entity_id: input_datetime.sprinkler_next_run
+          date: >
+            {% set time = states('input_select.sprinkler_start_time') %}
+            {% if now().strftime('%H:%M') < time %}
+              {{ as_timestamp(now()) | timestamp_custom("%Y-%m-%d") }}
+            {% else %}
+              {{ (as_timestamp(now()) + 24 * 3600 ) | timestamp_custom("%Y-%m-%d") }}
+            {% endif %}
+          time: >
+            {{ states('input_select.sprinkler_start_time') }}
+
+
+  - alias: Set last run
+    trigger:
+    - platform: state
+      entity_id: group.sprinkler_switches
+      to: 'off'
+      for: '00:00:05'
+    action:
+    - service: input_datetime.set_datetime
+      data_template:
+        entity_id: input_datetime.sprinkler_last_run
+        date: >
+          {{ as_timestamp(now()) | timestamp_custom("%Y-%m-%d ") }}
+        time: >
+          {{ as_timestamp(now()) | timestamp_custom("%H:%M") }}
+
+
+  - alias: Run cycle
+    initial_state: 'on'
+    trigger:
+      - platform: time
+        minutes: 00
+        seconds: 00
+
+    condition:
+      - condition: template
+        value_template: >
+          {{ now().strftime('%Y-%m-%d %H:%M:00') == states('input_datetime.sprinkler_next_run') }}
+      - condition: state
+        entity_id: input_boolean.sprinkler_schedule_enabled
+        state: 'on'
+      - condition: template
+        value_template: >
+          {{ states('sensor.sprinkler_status') == 'Not running' }}
+
+    action:
+      - service: script.run_cycle
+      - wait_template: "{{ is_state('script.run_cycle', 'off') }}"
+
+
+  - alias: Run manual cycle
+    trigger:
+      - platform: state
+        entity_id: input_boolean.run_manual_cycle
+        from: 'off'
+        to: 'on'
+
+    action:
+      - service: input_text.set_value
+        data_template:
+          entity_id: input_text.cycle_current_zone
+          value: 'Initialising...'
+
+      - service: script.turn_on
+        data_template:
+          entity_id: >
+            {% if is_state('sensor.sprinkler_status', 'Running zone') %}
+              script.stop_zone
+            {% else %}
+              script.do_nothing
+            {% endif %}
+
+      - delay: 00:00:01
+
+      - service: script.run_cycle
+      - wait_template: >
+          {{ is_state('script.run_cycle', 'off') }}
+
+      - service: homeassistant.turn_off
+        entity_id: input_boolean.run_manual_cycle
+
+
+  - alias: Stop cycle
+    trigger:
+      - platform: state
+        entity_id: input_boolean.run_manual_cycle
+        from: 'on'
+        to: 'off'
+
+    condition:
+      - condition: template
+        value_template: >
+          {{ states('sensor.sprinkler_status') == 'Running cycle' }}
+
+    action:
+      - service: script.stop_cycle
+
+
+  - alias: Run manual zone
+    trigger:
+      - platform: state
+        entity_id:
+          - input_boolean.water_zone1
+          - input_boolean.water_zone2
+          - input_boolean.water_zone3
+          - input_boolean.water_zone4
+          - input_boolean.water_zone5
+          - input_boolean.water_zone6
+        from: 'off'
+        to: 'on'
+
+    action:
+      - service: script.turn_on
+        data_template:
+          entity_id: >
+            {% if is_state('sensor.sprinkler_status', 'Running cycle') %}
+              script.stop_cycle
+            {% elif is_state('sensor.sprinkler_status', 'Running zone') %}
+              script.stop_zone
+            {% else %}
+              script.do_nothing
+            {% endif %}
+
+      - delay: 00:00:01
+
+      - service: script.run_manual_zone
+        data_template:
+          zone: "{{ trigger.entity_id[-1:] }}"
+
+
+  - alias: Cancel manual zone
+    trigger:
+      - platform: state
+        entity_id:
+          - input_boolean.water_zone1
+          - input_boolean.water_zone2
+          - input_boolean.water_zone3
+          - input_boolean.water_zone4
+          - input_boolean.water_zone5
+          - input_boolean.water_zone6
+        from: 'on'
+        to: 'off'
+
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.sprinkler_status') == 'Running zone' }}"
+
+    action:
+      - service: script.stop_zone
+
+      - service: homeassistant.turn_off
+        data_template:
+          entity_id: input_boolean.zone_running
+
+# -------
+# Scripts
+# -------
+
+script:
+
+  do_nothing:
+    sequence:
+
+  run_cycle:
+    sequence:
+
+      - service: input_datetime.set_datetime
+        data_template:
+          entity_id: input_datetime.sprinkler_next_run
+          date: >
+            {% if states('input_select.sprinkler_watering_days') == 'Daily' %}
+              {{ (as_timestamp(now() ) + 24 * 3600 ) | timestamp_custom("%Y-%m-%d ") }}
+            {% else %}
+              {{ (as_timestamp(now() ) + 48 * 3600 ) | timestamp_custom("%Y-%m-%d ") }}
+            {% endif %}
+          time: >
+            {{ states('input_select.sprinkler_start_time') }}
+
+      - condition: state
+        entity_id: sensor.sprinkler_status
+        state: 'Not running'
+
+      - service: input_text.set_value
+        data_template:
+          entity_id: input_text.cycle_current_zone
+          value: 'Initialising...'
+
+      - service: homeassistant.turn_on
+        data_template:
+          entity_id: input_boolean.cycle_running
+
+      - service: script.water_zone
+        data_template:
+          zone: 1
+      - wait_template: "{{ is_state('script.water_zone', 'off') }}"
+      - delay: "00:00:02"
+
+      - service: script.water_zone
+        data_template:
+          zone: 2
+      - wait_template: "{{ is_state('script.water_zone', 'off') }}"
+      - delay: "00:00:02"
+
+      - service: script.water_zone
+        data_template:
+          zone: 3
+      - wait_template: "{{ is_state('script.water_zone', 'off') }}"
+      - delay: "00:00:02"
+
+      - service: script.water_zone
+        data_template:
+          zone: 4
+      - wait_template: "{{ is_state('script.water_zone', 'off') }}"
+      - delay: "00:00:02"
+
+      - service: script.water_zone
+        data_template:
+          zone: 5
+      - wait_template: "{{ is_state('script.water_zone', 'off') }}"
+      - delay: "00:00:02"
+
+      - service: script.water_zone
+        data_template:
+          zone: 6
+      - wait_template: "{{ is_state('script.water_zone', 'off') }}"
+
+      - service: input_text.set_value
+        data_template:
+          entity_id: input_text.cycle_current_zone
+          value: 'None'
+
+      - service: homeassistant.turn_off
+        data_template:
+          entity_id: input_boolean.cycle_running
+
+
+  water_zone:
+    sequence:
+
+      # Don't continue if duration is zero
+      - condition: template
+        value_template: >
+          {% set n = states('input_number.duration_zone' + zone)  | int %}
+            {{ n != 0 }}
+
+      - service: input_text.set_value
+        data_template:
+          entity_id: input_text.cycle_current_zone
+          value: "{{ zone }}"
+
+      - service: switch.turn_on
+        data_template:
+          entity_id: switch.zone{{ zone }}
+
+      - service: timer.start
+        data_template:
+          entity_id: timer.zone_duration
+          duration: >
+            {% set duration = states('input_number.duration_zone' + zone)  | int %}
+            00:00:{{ '%02i' | format(duration) }}
+
+      - wait_template: "{{ is_state('timer.zone_duration' , 'idle') }}"
+
+      - service: switch.turn_off
+        data_template:
+          entity_id: switch.zone{{ zone }}
+
+      - service: input_text.set_value
+        data_template:
+          entity_id: input_text.cycle_current_zone
+          value: 'Changing zone...'
+
+
+  run_manual_zone:
+    sequence:
+
+      - service: homeassistant.turn_on
+        data_template:
+          entity_id: input_boolean.zone_running
+
+      - service: script.water_zone
+        data_template:
+          zone: "{{ zone }}"
+      - wait_template: "{{ is_state('script.water_zone', 'off') }}"
+
+      - service: homeassistant.turn_off
+        data_template:
+          entity_id: input_boolean.water_zone{{ zone }}
+
+      - service: homeassistant.turn_off
+        data_template:
+          entity_id: input_boolean.zone_running
+
+
+  stop_zone:
+    sequence:
+
+      - service: timer.cancel
+        entity_id: timer.zone_duration
+
+      - service: homeassistant.turn_off
+        entity_id: script.water_zone
+      - wait_template: "{{ is_state('script.water_zone', 'off') }}"
+
+      - service: input_text.set_value
+        data_template:
+          entity_id: input_text.cycle_current_zone
+          value: 'None'
+
+      - service: homeassistant.turn_off
+        data_template:
+          entity_id: input_boolean.zone_running
+
+
+  stop_cycle:
+    sequence:
+
+      - service: timer.cancel
+        entity_id: timer.zone_duration
+
+      - service: homeassistant.turn_off
+        entity_id: script.water_zone
+      - wait_template: "{{ is_state('script.water_zone', 'off') }}"
+
+      - service: homeassistant.turn_off
+        entity_id: script.run_cycle
+
+      - service: input_text.set_value
+        data_template:
+          entity_id: input_text.cycle_current_zone
+          value: 'None'
+
+      - service: homeassistant.turn_off
+        data_template:
+          entity_id: input_boolean.cycle_running
+

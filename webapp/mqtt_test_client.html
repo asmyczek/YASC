@@ -1,0 +1,61 @@
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
+    <script type="text/javascript" language="JavaScript">
+        var client;
+
+        onConnect = function() {
+            console.log("Connected");
+        }
+
+        onFailure = function(message) {
+            console.log(message)
+        }
+
+        onMessage = function(message) {
+            console.log(message.payloadString)
+        }
+
+        connect = function() {
+            client = new Paho.MQTT.Client("127.0.0.1", 1884, "browser-tester");
+            client.onMessageArrived = onMessage;
+            client.connect({
+                timeout:2,
+                onSuccess: onConnect,
+                onFailure: onFailure,
+                userName : "user",
+                password : "pass" });
+        }
+
+        sendMessage = function(message) {
+            mqtt_message = new Paho.MQTT.Message(message);
+            mqtt_message.destinationName = "topic";
+            client.send(mqtt_message);
+        }
+
+        activateZone = function(zone) {
+            console.log("Zone: " + zone)
+            sendMessage("Just a test!")
+        }
+
+        $(document).ready(function() {
+            connect();
+        });
+
+    </script>
+</head>
+<body>
+    <script type="text/javascript">
+        // nothing for now
+    </script>
+    <a href="javascript:;" onclick="activateZone(1)">Zone 1</a><br />
+    <a href="javascript:;" onclick="activateZone(2)">Zone 2</a><br />
+    <a href="javascript:;" onclick="activateZone(3)">Zone 3</a><br />
+    <a href="javascript:;" onclick="activateZone(4)">Zone 4</a><br />
+    <a href="javascript:;" onclick="activateZone(5)">Zone 5</a><br />
+    <a href="javascript:;" onclick="activateZone(6)">Zone 6</a><br />
+    <a href="javascript:;" onclick="activateZone(7)">Zone 7</a><br />
+    <a href="javascript:;" onclick="activateZone(8)">Zone 8</a><br />
+</body>
+</html>

@@ -1,0 +1,130 @@
+body {
+    font-family: "Helvetica";
+}
+
+.header {
+    background-color: #333399;
+    padding: 10px 5px 10px 2px;
+    font-size: 1.2em;
+    color: white;
+}
+
+.status {
+    background-color: #AAAAFF;
+    padding: 5px;
+}
+
+.status div {
+    margin: 3px 0px;
+}
+
+.status span {
+    padding-left: 2px;
+    padding-right: 20px;
+}
+
+.body {
+    padding: 10px 5px 10px 2px;
+}
+
+.button {
+    background-color: #8888FF;
+    border: none;
+    color: white;
+    padding: 10px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 1em;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+.button-cycle {
+    color: white;
+    border: 2px solid #8888RF;
+}
+
+.button-zone {
+    background-color: white;
+    color: black;
+    border: 2px solid #8888FF;
+}
+
+#version {
+    font-size: 0.6em;
+    text-align: center;
+    float:right;
+}
+
+
+
+#logs_header {
+    text-decoration: none;
+    padding-left: 5px;
+}
+
+#logs {
+    background-color: #EEEEEE;
+    padding: 10px;
+    font-size: 0.6em;
+    height: 250px;
+    overflow:auto;
+    display: none;
+}
+
+#now {
+    text-align: center;
+    float:right;
+    padding-right: 5px;
+}
+
+.dropbtn {
+    background-color: #AAAAFF;
+    color: white;
+    font-size: 0.8em;
+    border: none;
+    cursor: pointer;
+    min-width: 60px;
+    border-style: solid;
+    border-color: white;
+    border-radius: 3px;
+    border-width: 1px;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+    float:right;
+    background-color: #AAAAFF;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #f9f9f9;
+    min-width: 60px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    font-size: 0.9em;
+    padding: 5px 8px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {background-color: #AAAAFF;}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropbtn {
+    background-color: #AAAAFF;
+}
+
+

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" href="static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="static/style.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
+    <script src="static/app.js" type="text/javascript"></script>
+    <script type="text/javascript" language="JavaScript">
+        $(document).ready(function() {
+            $.get('api/config').done(loadConfig);
+            update_status()
+            update_logs()
+            $('#logs_header').click(function(){ $('#logs').toggle(); });
+        });
+    </script>
+</head>
+<body>
+<div class="header">
+    <img />
+    <span>YASC - Yet Another Sprinkler Controller</span>
+    <span class="dropdown">
+        <button id="controller-mode" class="dropbtn">mode</button>
+        <span class="dropdown-content">
+            <a href="#" onclick="set_mode('OFF')">Off</a>
+            <a href="#" onclick="set_mode('AUTO')">Auto</a>
+            <a href="#" onclick="set_mode('LOCAL')">Local</a>
+            <a href="#" onclick="set_mode('MQTT')">Mqtt</a>
+        </span>
+    </span>
+</div>
+<div class="status">
+    <div>
+        Running: <span id="running">None</span>
+        Active Zone: <span id="activezone">None</span>
+        Mode: <span id="active-controller-mode">None</span>
+        Environment: <span id="environment">None</span>
+    </div>
+    <div>
+        Next run scheduled for: <span id="next_run"></span><span id="now"></span>
+    </div>
+</div>
+<div class="body">
+    <span id="version">None</span>
+    <div>
+        <button onclick="run_cycle()" class="button button-cycle">Run Cycle</button>
+        <button onclick="stop_sprinkler()" class="button button-cycle">Stop Sprinkler</button>
+    </div>
+    <div id="zones">
+    </div>
+</div>
+<div><a href="javascript:;" id="logs_header">Logs</a></div>
+<div id="logs">
+</div>
+</body>
+</html>
+
