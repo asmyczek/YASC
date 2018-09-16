@@ -74,7 +74,7 @@ class AppLogHandler(StreamHandler):
 APP_LOG_HANDLER = AppLogHandler()
 GLOBAL_LOG_HANDLER = None
 
-log_level_str = os.getenv('SPRINKLER_LOG_LEVEL', None)
+log_level_str = os.getenv('YASC_LOG_LEVEL', None)
 log_level = logging.INFO
 if log_level_str is not None:
     log_level = logging.getLevelName(log_level_str.upper())
@@ -83,7 +83,7 @@ logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelnam
 rootLogger = logging.getLogger()
 rootLogger.setLevel(log_level)
 
-env = os.getenv('SPRINKLER_ENV', None)
+env = os.getenv('YASC_ENV', None)
 if env is not None and Environment[env.upper()] == Environment.PROD:
     GLOBAL_LOG_HANDLER = RotatingFileHandler("{0}/{1}.log".format('.', 'yasc'), maxBytes=10000000, backupCount=5)
     GLOBAL_LOG_HANDLER.setFormatter(logFormatter)
@@ -103,16 +103,16 @@ logging.info('Starting application...')
 # Get deployment environment
 
 def __setup_environment():
-    env = os.getenv('SPRINKLER_ENV', None)
+    env = os.getenv('YASC_ENV', None)
     if env is None:
-        logging.error('Environment variable SPRINKLER_ENV not defined!')
+        logging.error('Environment variable YASC_ENV not defined!')
         logging.error('Setting environment to DEV!')
         return Environment.DEV
     else:
         try:
             return Environment[env.upper()]
         except ValueError:
-            logging.error('Unrecognized environment variable SPRINKLER_ENV with value {0}.'.format(env))
+            logging.error('Unrecognized environment variable YASC_ENV with value {0}.'.format(env))
             logging.error('Setting environment to DEV!')
             return Environment.DEV
 

@@ -5,10 +5,10 @@ After=multi-user.target
  
 [Service]
 Type=simple
-Environment=SPRINKLER_ENV=prod
-Environment=SPRINKLER_LOG_LEVEL=info
-WorkingDirectory=/home/admin/sprinkler
-ExecStart=/home/admin/sprinkler/start_yasc.sh
+Environment=YASC_ENV=prod
+Environment=YASC_LOG_LEVEL=info
+WorkingDirectory={path_to_yasc}/YASC
+ExecStart={path_to_yasc}/YASC/start_yasc.sh
 Restart=on-abort
  
 [Install]
