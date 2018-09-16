@@ -4,16 +4,16 @@
 
 group:
 
-  sprinkler:
+  yasc:
     name: Sprinkler
     view: yes
     entities:
-      - group.sprinkler_status
-      - group.sprinkler_zones
-      - group.sprinkler_schedule
-      - group.sprinkler_switches
+      - group.yasc_status
+      - group.yasc_zones
+      - group.yasc_schedule
+      - group.yasc_switches
 
-  sprinkler_zones:
+  yasc_zones:
     name: Zones
     control: hidden
     entities:
@@ -24,7 +24,7 @@ group:
       - input_boolean.water_zone5
       - input_boolean.water_zone6
 
-  sprinkler_switches:
+  yasc_switches:
     name: Zone switches
     control: hidden
     entities:
@@ -35,13 +35,13 @@ group:
       - switch.zone5
       - switch.zone6
 
-  sprinkler_schedule:
+  yasc_schedule:
     name: Schedule
     control: hidden
     entities:
-      - input_boolean.sprinkler_schedule_enabled
-      - input_select.sprinkler_watering_days
-      - input_select.sprinkler_start_time
+      - input_boolean.yasc_schedule_enabled
+      - input_select.yasc_watering_days
+      - input_select.yasc_start_time
       - input_number.duration_zone1
       - input_number.duration_zone2
       - input_number.duration_zone3
@@ -49,15 +49,15 @@ group:
       - input_number.duration_zone5
       - input_number.duration_zone6
 
-  sprinkler_status:
+  yasc_status:
     name: Status
     control: hidden
     entities:
       - input_boolean.run_manual_cycle
-      - sensor.sprinkler_next_run
-      - sensor.sprinkler_status
+      - sensor.yasc_next_run
+      - sensor.yasc_status
       - sensor.watering_zone
-      - sensor.sprinkler_last_run
+      - sensor.yasc_last_run
 
 # ------
 # Inputs
@@ -65,7 +65,7 @@ group:
 
 input_boolean:
 
-  sprinkler_schedule_enabled:
+  yasc_schedule_enabled:
     name: Enable schedule
     icon: mdi:calendar
 
@@ -113,14 +113,14 @@ input_boolean:
 
 input_select:
 
-  sprinkler_watering_days:
+  yasc_watering_days:
     name: Schedule
     options:
       - 'Daily'
       - 'Alternate'
     icon: mdi:calendar
 
-  sprinkler_start_time:
+  yasc_start_time:
     name: Start time
     options:
       - '02:00'
@@ -178,11 +178,11 @@ input_number:
     icon: mdi:camera-timer
 
 input_datetime:
-  sprinkler_next_run:
+  yasc_next_run:
     has_date: true
     has_time: true
 
-  sprinkler_last_run:
+  yasc_last_run:
     has_date: true
     has_time: true
 
@@ -205,17 +205,17 @@ sensor:
   - platform: template
     sensors:
 
-      sprinkler_next_run:
+      yasc_next_run:
         friendly_name: "Next run time"
         value_template: >
-          {% if is_state('input_boolean.sprinkler_schedule_enabled', 'on') %}
-            {{ (as_timestamp(states.input_datetime.sprinkler_next_run.state)) | timestamp_custom("%a %d %h at %H:%M") }}
+          {% if is_state('input_boolean.yasc_schedule_enabled', 'on') %}
+            {{ (as_timestamp(states.input_datetime.yasc_next_run.state)) | timestamp_custom("%a %d %h at %H:%M") }}
           {% else %}
             None
           {% endif %}
         icon_template: mdi:clock-start
 
-      sprinkler_status:
+      yasc_status:
         friendly_name: "Status"
         value_template: >
           {% if is_state('input_boolean.cycle_running', 'on') %}
@@ -237,10 +237,10 @@ sensor:
         value_template: "{{ states('input_text.cycle_current_zone') }}"
         icon_template: mdi:square-inc
 
-      sprinkler_last_run:
+      yasc_last_run:
         friendly_name: "Last run"
         value_template: >
-          {{ (as_timestamp(states.input_datetime.sprinkler_last_run.state)) | timestamp_custom("%a %d %h at %H:%M") }}
+          {{ (as_timestamp(states.input_datetime.yasc_last_run.state)) | timestamp_custom("%a %d %h at %H:%M") }}
         icon_template: mdi:update
 
 
@@ -334,35 +334,35 @@ automation:
     initial_state: 'on'
     trigger:
       - platform: state
-        entity_id: input_boolean.sprinkler_schedule_enabled
+        entity_id: input_boolean.yasc_schedule_enabled
         to: 'on'
       - platform: state
-        entity_id: input_select.sprinkler_start_time
+        entity_id: input_select.yasc_start_time
     action:
       - service: input_datetime.set_datetime
         data_template:
-          entity_id: input_datetime.sprinkler_next_run
+          entity_id: input_datetime.yasc_next_run
           date: >
-            {% set time = states('input_select.sprinkler_start_time') %}
+            {% set time = states('input_select.yasc_start_time') %}
             {% if now().strftime('%H:%M') < time %}
               {{ as_timestamp(now()) | timestamp_custom("%Y-%m-%d") }}
             {% else %}
               {{ (as_timestamp(now()) + 24 * 3600 ) | timestamp_custom("%Y-%m-%d") }}
             {% endif %}
           time: >
-            {{ states('input_select.sprinkler_start_time') }}
+            {{ states('input_select.yasc_start_time') }}
 
 
   - alias: Set last run
     trigger:
     - platform: state
-      entity_id: group.sprinkler_switches
+      entity_id: group.yasc_switches
       to: 'off'
       for: '00:00:05'
     action:
     - service: input_datetime.set_datetime
       data_template:
-        entity_id: input_datetime.sprinkler_last_run
+        entity_id: input_datetime.yasc_last_run
         date: >
           {{ as_timestamp(now()) | timestamp_custom("%Y-%m-%d ") }}
         time: >
@@ -379,13 +379,13 @@ automation:
     condition:
       - condition: template
         value_template: >
-          {{ now().strftime('%Y-%m-%d %H:%M:00') == states('input_datetime.sprinkler_next_run') }}
+          {{ now().strftime('%Y-%m-%d %H:%M:00') == states('input_datetime.yasc_next_run') }}
       - condition: state
-        entity_id: input_boolean.sprinkler_schedule_enabled
+        entity_id: input_boolean.yasc_schedule_enabled
         state: 'on'
       - condition: template
         value_template: >
-          {{ states('sensor.sprinkler_status') == 'Not running' }}
+          {{ states('sensor.yasc_status') == 'Not running' }}
 
     action:
       - service: script.run_cycle
@@ -408,7 +408,7 @@ automation:
       - service: script.turn_on
         data_template:
           entity_id: >
-            {% if is_state('sensor.sprinkler_status', 'Running zone') %}
+            {% if is_state('sensor.yasc_status', 'Running zone') %}
               script.stop_zone
             {% else %}
               script.do_nothing
@@ -434,7 +434,7 @@ automation:
     condition:
       - condition: template
         value_template: >
-          {{ states('sensor.sprinkler_status') == 'Running cycle' }}
+          {{ states('sensor.yasc_status') == 'Running cycle' }}
 
     action:
       - service: script.stop_cycle
@@ -457,9 +457,9 @@ automation:
       - service: script.turn_on
         data_template:
           entity_id: >
-            {% if is_state('sensor.sprinkler_status', 'Running cycle') %}
+            {% if is_state('sensor.yasc_status', 'Running cycle') %}
               script.stop_cycle
-            {% elif is_state('sensor.sprinkler_status', 'Running zone') %}
+            {% elif is_state('sensor.yasc_status', 'Running zone') %}
               script.stop_zone
             {% else %}
               script.do_nothing
@@ -487,7 +487,7 @@ automation:
 
     condition:
       - condition: template
-        value_template: "{{ states('sensor.sprinkler_status') == 'Running zone' }}"
+        value_template: "{{ states('sensor.yasc_status') == 'Running zone' }}"
 
     action:
       - service: script.stop_zone
@@ -510,18 +510,18 @@ script:
 
       - service: input_datetime.set_datetime
         data_template:
-          entity_id: input_datetime.sprinkler_next_run
+          entity_id: input_datetime.yasc_next_run
           date: >
-            {% if states('input_select.sprinkler_watering_days') == 'Daily' %}
+            {% if states('input_select.yasc_watering_days') == 'Daily' %}
               {{ (as_timestamp(now() ) + 24 * 3600 ) | timestamp_custom("%Y-%m-%d ") }}
             {% else %}
               {{ (as_timestamp(now() ) + 48 * 3600 ) | timestamp_custom("%Y-%m-%d ") }}
             {% endif %}
           time: >
-            {{ states('input_select.sprinkler_start_time') }}
+            {{ states('input_select.yasc_start_time') }}
 
       - condition: state
-        entity_id: sensor.sprinkler_status
+        entity_id: sensor.yasc_status
         state: 'Not running'
 
       - service: input_text.set_value

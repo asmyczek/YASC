@@ -42,7 +42,7 @@
     "port": 8080
   },
   "mqtt": {
-      "client_name": "sprinkler",
+      "client_name": "yasc",
       "broker": "localhost",
       "user": "user",
       "password": "pass",
