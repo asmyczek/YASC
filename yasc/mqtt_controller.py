@@ -36,7 +36,6 @@ class MQTTPing(Thread):
     def stop(self):
         if not self.__stop.is_set():
             self.__stop.set()
-        self.join()
 
     def run(self):
         while not self.__stop.is_set():
@@ -97,6 +96,8 @@ class MQTTController:
             if rc == 0:
                 logging.info('Connected to mqtt broker.')
                 user_data['connected'] = True
+                controller = user_data['controller']
+                controller.send_available_state()
                 led_on(2)
             else:
                 logging.error('Unable to establish connection. RS={0}'.format(rc))
@@ -104,9 +105,12 @@ class MQTTController:
                 led_off(2)
 
         def on_disconnect(mqttc, user_data, rc):
-            logging.info('Connected to mqtt broker.')
+            logging.info('Disconnected to mqtt broker.')
             user_data['connected'] = False
             led_off(2)
+
+        def on_publish(mqttc, user_data, mid):
+            logging.debug('Data published with mid {0}.'.format(mid))
 
         self.__client = paho.Client(self.__conf.client_name, transport='websockets')
         self.__client.username_pw_set(self.__conf.user, password=self.__conf.password)
@@ -115,23 +119,21 @@ class MQTTController:
         self.__client.on_connect = on_connect
         self.__client.on_disconnect = on_disconnect
         self.__client.on_message = process_message
+        self.__client.on_publish = on_publish
         self.__client.on_subscribe = lambda c, ud, mid, qos: logging.debug('Subscribed with qos {0}.'.format(qos))
-        self.__client.on_publish = lambda c, ud, mid: logging.debug('Data published with mid {0}.'.format(mid))
+
+        # For Home-Assistant
+        self.__client.subscribe('{0}/zone/+/status'.format(self.__conf.topic), qos=2)
+        self.__client.subscribe('{0}/zone/+/set'.format(self.__conf.topic), qos=2)
+
+        # General use
+        self.__client.subscribe('{0}/cycle'.format(self.__conf.topic), qos=2)
+        self.__client.subscribe('{0}/stop'.format(self.__conf.topic), qos=2)
+        self.__client.loop_start()
 
         try:
             logging.info('Starting MQTT controller.')
             self.__client.connect(self.__conf.broker, self.__conf.port)
-            # For Home-Assistant
-            self.__client.subscribe('{0}/zone/+/status'.format(self.__conf.topic), qos=2)
-            self.__client.subscribe('{0}/zone/+/set'.format(self.__conf.topic), qos=2)
-            self.__client.subscribe('{0}/zone/+/available'.format(self.__conf.topic), qos=2)
-
-            # General use
-            self.__client.subscribe('{0}/cycle'.format(self.__conf.topic), qos=2)
-            self.__client.subscribe('{0}/stop'.format(self.__conf.topic), qos=2)
-            self.__client.loop_start()
-
-            self.send_available_state()
         except Exception as e:
             logging.error(e)
             logging.exception('Unable to connect to MQTT broker!')
