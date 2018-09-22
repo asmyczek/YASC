@@ -601,7 +601,7 @@ script:
           entity_id: timer.zone_duration
           duration: >
             {% set duration = states('input_number.duration_zone' + zone)  | int %}
-            00:{{ '%02i' | format(duration) }}:00
+            00:00:{{ '%02i' | format(duration) }}
 
       - wait_template: "{{ is_state('timer.zone_duration' , 'idle') }}"
 
