@@ -67,6 +67,7 @@ class ApiSetControllerMode(object):
     def POST(self, **kwargs):
         mode = kwargs.get('mode', 'None')
         if mode != 'None':
+            logging.info('Setting controller mode to {0}'.format(mode))
             state.set_control_mode(ControllerMode[mode])
             if state.control_mode() == ControllerMode.OFF:
                 self.__zone_queue.put((ZoneAction.STOP, 0))
