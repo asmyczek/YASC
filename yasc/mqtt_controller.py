@@ -98,6 +98,16 @@ class MQTTController:
                 user_data['connected'] = True
                 controller = user_data['controller']
                 controller.send_available_state()
+
+
+                # For Home-Assistant
+                self.__client.subscribe('{0}/zone/+/status'.format(self.__conf.topic), qos=2)
+                self.__client.subscribe('{0}/zone/+/set'.format(self.__conf.topic), qos=2)
+
+                # General use
+                self.__client.subscribe('{0}/cycle'.format(self.__conf.topic), qos=2)
+                self.__client.subscribe('{0}/stop'.format(self.__conf.topic), qos=2)
+
                 led_on(2)
             else:
                 logging.error('Unable to establish connection. RS={0}'.format(rc))
@@ -105,7 +115,7 @@ class MQTTController:
                 led_off(2)
 
         def on_disconnect(mqttc, user_data, rc):
-            logging.info('Disconnected to mqtt broker.')
+            logging.info('Disconnected from mqtt broker.')
             user_data['connected'] = False
             led_off(2)
 
@@ -122,13 +132,6 @@ class MQTTController:
         self.__client.on_publish = on_publish
         self.__client.on_subscribe = lambda c, ud, mid, qos: logging.debug('Subscribed with qos {0}.'.format(qos))
 
-        # For Home-Assistant
-        self.__client.subscribe('{0}/zone/+/status'.format(self.__conf.topic), qos=2)
-        self.__client.subscribe('{0}/zone/+/set'.format(self.__conf.topic), qos=2)
-
-        # General use
-        self.__client.subscribe('{0}/cycle'.format(self.__conf.topic), qos=2)
-        self.__client.subscribe('{0}/stop'.format(self.__conf.topic), qos=2)
         self.__client.loop_start()
 
         try:
@@ -141,6 +144,7 @@ class MQTTController:
 
     def send_available_state(self, state=None):
         if self.__client is not None:
+            logging.info('Sending availability ping.')
             zones = []
             for zone_info in CONFIG.active_zones:
                 zones.append(zone_info.zone)
