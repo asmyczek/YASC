@@ -47,7 +47,7 @@
       "user": "user",
       "password": "pass",
       "port": 1884,
-      "topic": "home/yasc"
+      "topic": "yasc"
     },
   "local_timer": {
     "days":["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],

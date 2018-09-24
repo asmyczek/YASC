@@ -83,32 +83,32 @@ input_boolean:
 
   water_zone1:
     name: Island
-    icon: mdi:play
+    icon: mdi:run
     initial: off
 
   water_zone2:
     name: Palms
-    icon: mdi:play
+    icon: mdi:run
     initial: off
 
   water_zone3:
     name: Lawn
-    icon: mdi:play
+    icon: mdi:run
     initial: off
 
   water_zone4:
     name: Entrance side
-    icon: mdi:play
+    icon: mdi:run
     initial: off
 
   water_zone5:
     name: Entrance wall
-    icon: mdi:play
+    icon: mdi:run
     initial: off
 
   water_zone6:
     name: Outside
-    icon: mdi:play
+    icon: mdi:run
     initial: off
 
 input_select:
@@ -252,9 +252,9 @@ switch:
 
   - platform: mqtt
     name: zone1
-    state_topic: "home/yasc/zone/1/status"
-    command_topic: "home/yasc/zone/1/set"
-    availability_topic: "home/yasc/zone/1/available"
+    state_topic: "yasc/zone/1/status"
+    command_topic: "yasc/zone/1/set"
+    availability_topic: "yasc/zone/1/available"
     qos: 2
     payload_on: "ON"
     payload_off: "OFF"
@@ -265,9 +265,9 @@ switch:
 
   - platform: mqtt
     name: zone2
-    state_topic: "home/yasc/zone/4/status"
-    command_topic: "home/yasc/zone/4/set"
-    availability_topic: "home/yasc/zone/4/available"
+    state_topic: "yasc/zone/4/status"
+    command_topic: "yasc/zone/4/set"
+    availability_topic: "yasc/zone/4/available"
     qos: 2
     payload_on: "ON"
     payload_off: "OFF"
@@ -277,9 +277,9 @@ switch:
 
   - platform: mqtt
     name: zone3
-    state_topic: "home/yasc/zone/5/status"
-    command_topic: "home/yasc/zone/5/set"
-    availability_topic: "home/yasc/zone/5/available"
+    state_topic: "yasc/zone/5/status"
+    command_topic: "yasc/zone/5/set"
+    availability_topic: "yasc/zone/5/available"
     qos: 2
     payload_on: "ON"
     payload_off: "OFF"
@@ -289,9 +289,9 @@ switch:
 
   - platform: mqtt
     name: zone4
-    state_topic: "home/yasc/zone/6/status"
-    command_topic: "home/yasc/zone/6/set"
-    availability_topic: "home/yasc/zone/6/available"
+    state_topic: "yasc/zone/6/status"
+    command_topic: "yasc/zone/6/set"
+    availability_topic: "yasc/zone/6/available"
     qos: 2
     payload_on: "ON"
     payload_off: "OFF"
@@ -301,9 +301,9 @@ switch:
 
   - platform: mqtt
     name: zone5
-    state_topic: "home/yasc/zone/7/status"
-    command_topic: "home/yasc/zone/7/set"
-    availability_topic: "home/yasc/zone/7/available"
+    state_topic: "yasc/zone/7/status"
+    command_topic: "yasc/zone/7/set"
+    availability_topic: "yasc/zone/7/available"
     qos: 2
     payload_on: "ON"
     payload_off: "OFF"
@@ -313,9 +313,9 @@ switch:
 
   - platform: mqtt
     name: zone6
-    state_topic: "home/yasc/zone/8/status"
-    command_topic: "home/yasc/zone/8/set"
-    availability_topic: "home/yasc/zone/8/available"
+    state_topic: "yasc/zone/8/status"
+    command_topic: "yasc/zone/8/set"
+    availability_topic: "yasc/zone/8/available"
     qos: 2
     payload_on: "ON"
     payload_off: "OFF"
@@ -495,6 +495,29 @@ automation:
       - service: homeassistant.turn_off
         data_template:
           entity_id: input_boolean.zone_running
+
+  - alias: YASC system last will
+    trigger:
+      platform: mqtt
+      topic: yasc/status
+      payload: "DOWN"
+
+    action:
+      - service: script.turn_on
+        data_template:
+          entity_id: >
+            {% if is_state('sensor.yasc_status', 'Running cycle') %}
+              script.stop_cycle
+            {% elif is_state('sensor.yasc_status', 'Running zone') %}
+              script.stop_zone
+            {% else %}
+              script.do_nothing
+            {% endif %}
+
+
+      - service: switch.turn_off
+        data_template:
+          entity_id: group.yasc_switches
 
 # -------
 # Scripts
