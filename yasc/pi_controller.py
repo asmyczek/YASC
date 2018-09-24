@@ -42,7 +42,7 @@ def get_active_zone():
 
 
 def stop_sprinkler():
-    logging.info('Stopping yasc')
+    logging.info('Stopping all zones')
     for index, zone in enumerate(ZONES):
         if GPIO.input(zone):
             state.zone_off(index + 1)

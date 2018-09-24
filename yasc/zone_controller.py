@@ -22,7 +22,7 @@ else:
         return __dev_zone
 
     def stop_sprinkler():
-        logging.debug('Stopping yasc')
+        logging.debug('Stopping sprinkler zone')
         global __dev_zone
         if __dev_zone > 0:
             logging.debug('Stopping zone {0}.'.format(__dev_zone))
