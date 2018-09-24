@@ -515,7 +515,7 @@ automation:
             {% endif %}
 
 
-      - service: switch.turn_off
+      - service: homeassistant.turn_off
         data_template:
           entity_id: group.yasc_switches
 
