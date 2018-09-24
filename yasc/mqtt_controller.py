@@ -36,6 +36,7 @@ class MQTTPing(Thread):
     def stop(self):
         if not self.__stop.is_set():
             self.__stop.set()
+        self.join()
 
     def run(self):
         while not self.__stop.is_set():
@@ -132,6 +133,11 @@ class MQTTController:
         self.__client.on_publish = on_publish
         self.__client.on_subscribe = lambda c, ud, mid, qos: logging.debug('Subscribed with qos {0}.'.format(qos))
 
+        self.__client.will_set('{0}/status'.format(self.__conf.topic),
+                               'DOWN',
+                               qos=0,
+                               retain=False)
+
         self.__client.loop_start()
 
         try:
@@ -140,10 +146,9 @@ class MQTTController:
         except Exception as e:
             logging.error(e)
             logging.exception('Unable to connect to MQTT broker!')
-            self.__client = None
 
     def send_available_state(self, state=None):
-        if self.__client is not None:
+        if self.mqtt_connected():
             logging.info('Sending availability ping.')
             zones = []
             for zone_info in CONFIG.active_zones:
@@ -178,6 +183,10 @@ class MQTTController:
     def cleanup(self):
         if self.__client is not None:
             self.send_available_state(CMD.OFFLINE)
+            self.__client.publish('{0}/status'.format(self.__conf.topic),
+                                  'DOWN',
+                                  qos=2,
+                                  retain=False)
             self.__ping.stop()
             self.__client.loop_stop()
             self.__client.disconnect()
