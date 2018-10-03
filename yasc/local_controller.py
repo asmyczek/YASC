@@ -63,8 +63,7 @@ class LocalController(Thread):
     def __run_cycle(self):
         self.__zone_queue.put((ZoneAction.RUN_CYCLE, 0))
 
-    def run(self):
-        logging.info('Local cycle run controller started.')
+    def __schedule_job(self):
         if in_production():
             for day in self.__days:
                 job = Job(1, self.__scheduler)
@@ -72,9 +71,18 @@ class LocalController(Thread):
                 job.unit = 'weeks'
                 job.at(self.__start_time.strftime("%H:%M")).do(self.__run_cycle)
         else:
-            self.__scheduler.every().minute.do(self.__run_cycle)
-
+            self.__scheduler.every(3).minutes.do(self.__run_cycle)
         logging.info('Next run scheduled for {0}.'.format(self.__scheduler.next_run))
+
+    def control_mode_changed(self, mode):
+        if mode is not ControllerMode.LOCAL:
+            self.__scheduler.clear()
+        elif mode is ControllerMode.LOCAL:
+            self.__schedule_job()
+
+    def run(self):
+        logging.info('Local cycle run controller started.')
+        self.__schedule_job()
         while not self.__stop.is_set():
             if state.active_controller_mode() is ControllerMode.LOCAL:
                 self.__scheduler.run_pending()

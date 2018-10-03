@@ -59,6 +59,7 @@ def main():
         state.set_mqtt_status_callback(mqtt_controller.mqtt_connected)
 
         local_controller = LocalController(zone_queue)
+        state.add_mode_changed_callback(local_controller.control_mode_changed)
         local_controller.start()
 
         state.set_next_run_callback(local_controller.next_run)

@@ -164,6 +164,7 @@ class _State(object):
         self.__status_file = None
         self.__zone_on_callback = []
         self.__zone_off_callback = []
+        self.__mode_changed_callback = []
         self.__next_run_callback = None
         self.__mqtt_status_callback = None
         self.__load_status()
@@ -195,6 +196,9 @@ class _State(object):
     def add_zone_off_callback(self, callback):
         self.__zone_off_callback.append(callback)
 
+    def add_mode_changed_callback(self, callback):
+        self.__mode_changed_callback.append(callback)
+
     def set_next_run_callback(self, callback):
         self.__next_run_callback = callback
 
@@ -209,11 +213,8 @@ class _State(object):
                 return ControllerMode(self.__mode.value)
 
     def next_run(self):
-        if self.__next_run_callback is not None:
-            return self.__next_run_callback()
-        else:
-            logging.warning('Next run callback not defined. Returning max date!')
-            return datetime.max
+        next_run = self.__next_run_callback() if self.__next_run_callback is not None else None
+        return next_run if next_run is not None else datetime.max
 
     def mqtt_connected(self):
         if self.__mqtt_status_callback is not None:
@@ -231,6 +232,8 @@ class _State(object):
             if self.__mode.value != mode.value:
                 self.__mode.value = mode.value
                 self.__save_status()
+                for callback in self.__mode_changed_callback:
+                    callback(ControllerMode(self.__mode.value))
 
     def zone_on(self, zone):
         with self.__lock_run_state:

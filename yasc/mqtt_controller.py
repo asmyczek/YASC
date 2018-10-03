@@ -100,7 +100,6 @@ class MQTTController:
                 controller = user_data['controller']
                 controller.send_available_state()
 
-
                 # For Home-Assistant
                 self.__client.subscribe('{0}/zone/+/status'.format(self.__conf.topic), qos=2)
                 self.__client.subscribe('{0}/zone/+/set'.format(self.__conf.topic), qos=2)
