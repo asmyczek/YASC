@@ -60,8 +60,6 @@ class ApiConfig(object):
 
 @cherrypy.expose
 class ApiSetControllerMode(object):
-    def __init__(self, zone_queue):
-        self.__zone_queue = zone_queue
 
     @cherrypy.tools.json_out()
     def POST(self, **kwargs):
@@ -69,48 +67,40 @@ class ApiSetControllerMode(object):
         if mode != 'None':
             logging.info('Setting controller mode to {0}'.format(mode))
             state.set_control_mode(ControllerMode[mode])
-            if state.control_mode() == ControllerMode.OFF:
-                self.__zone_queue.put((ZoneAction.STOP, 0))
         else:
-            logging.error('No mode defined!')
+            logging.error('Mode not defined!')
 
 
 @cherrypy.expose
 class ApiRunCycle(object):
-    def __init__(self, zone_queue):
-        self.__zone_queue = zone_queue
 
     @cherrypy.tools.json_out()
     def POST(self, **kwargs):
         logging.debug('POST run cycle')
-        self.__zone_queue.put((ZoneAction.RUN_CYCLE, 0))
+        state.run_zone_action((ZoneAction.RUN_CYCLE, 0))
 
 
 @cherrypy.expose
 class ApiActivateZone(object):
-    def __init__(self, zone_queue):
-        self.__zone_queue = zone_queue
 
     @cherrypy.tools.json_out()
     def POST(self, **kwargs):
         logging.debug('Activate zone request {0}'.format(kwargs))
         zone = kwargs.get('zone', '0')
         if int(zone) > 0:
-            self.__zone_queue.put((ZoneAction.ZONE, int(zone)))
+            state.run_zone_action((ZoneAction.ZONE, int(zone)))
         return True
 
 
 @cherrypy.expose
 class ApiStopSprinkler(object):
-    def __init__(self, zone_queue):
-        self.__zone_queue = zone_queue
 
     @cherrypy.tools.json_out()
     def POST(self, **kwargs):
-        self.__zone_queue.put((ZoneAction.STOP, 0))
+        state.run_zone_action((ZoneAction.STOP, 0))
 
 
-def start_server(start_callback, stop_callback, zone_queue):
+def start_server(start_callback, stop_callback):
 
     config = {
         '/': {
@@ -136,10 +126,10 @@ def start_server(start_callback, stop_callback, zone_queue):
     app.api.status = ApiStatus()
     app.api.config = ApiConfig()
     app.api.logs = ApiLogs()
-    app.api.set_controller_mode = ApiSetControllerMode(zone_queue)
-    app.api.activate_zone = ApiActivateZone(zone_queue)
-    app.api.run_cycle = ApiRunCycle(zone_queue)
-    app.api.stop_sprinkler = ApiStopSprinkler(zone_queue)
+    app.api.set_controller_mode = ApiSetControllerMode()
+    app.api.activate_zone = ApiActivateZone()
+    app.api.run_cycle = ApiRunCycle()
+    app.api.stop_sprinkler = ApiStopSprinkler()
 
     cherrypy.config.update({'log.screen': False,
                             'log.access_file': '',

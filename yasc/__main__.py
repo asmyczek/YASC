@@ -6,7 +6,6 @@ from yasc.zone_controller import ZoneController
 from yasc.mqtt_controller import MQTTController
 from yasc.server import start_server
 from yasc.local_controller import LocalController
-from queue import Queue
 import logging
 
 # RPi imports not working
@@ -26,7 +25,6 @@ else:
 
 def main():
 
-    zone_queue = Queue()
     zone_controller = None
     local_controller = None
     button_controller = None
@@ -50,24 +48,25 @@ def main():
     try:
         setup_pi()
 
-        zone_controller = ZoneController(zone_queue)
+        zone_controller = ZoneController()
+        state.add_mode_changed_callback(zone_controller.control_mode_changed)
         zone_controller.start()
 
-        mqtt_controller = MQTTController(zone_queue)
+        mqtt_controller = MQTTController()
         state.add_zone_on_callback(mqtt_controller.zone_on)
         state.add_zone_off_callback(mqtt_controller.zone_off)
         state.set_mqtt_status_callback(mqtt_controller.mqtt_connected)
 
-        local_controller = LocalController(zone_queue)
+        local_controller = LocalController()
         state.add_mode_changed_callback(local_controller.control_mode_changed)
         local_controller.start()
 
         state.set_next_run_callback(local_controller.next_run)
 
-        button_controller = ButtonController(zone_queue)
+        button_controller = ButtonController()
         button_controller.start()
 
-        start_server(start, stop, zone_queue)
+        start_server(start, stop)
 
     finally:
         stop()

@@ -7,6 +7,7 @@ from collections import namedtuple, deque
 from pathlib import Path
 from multiprocessing import Lock, Value
 from datetime import datetime
+from queue import Queue
 import logging
 import json
 import sys
@@ -156,6 +157,7 @@ else:
 class _State(object):
 
     def __init__(self):
+        self.__zone_queue = Queue()
         self.__lock_mode = Lock()
         self.__mode = Value('i', ControllerMode.AUTO.value)
         self.__lock_run_state = Lock()
@@ -211,6 +213,12 @@ class _State(object):
                 return ControllerMode.MQTT if self.mqtt_connected() else ControllerMode.LOCAL
             else:
                 return ControllerMode(self.__mode.value)
+
+    def run_zone_action(self, action):
+        self.__zone_queue.put(action)
+
+    def process_queue(self, lf):
+         lf(self.__zone_queue)
 
     def next_run(self):
         next_run = self.__next_run_callback() if self.__next_run_callback is not None else None

@@ -46,8 +46,7 @@ class MQTTPing(Thread):
 
 class MQTTController:
 
-    def __init__(self, zone_queue):
-        self.__zone_queue = zone_queue
+    def __init__(self):
         self.__conf = CONFIG.mqtt
         self.__user_data = {'controller': self, 'conf': self.__conf, 'connected': False}
         self.__client = None
@@ -68,9 +67,9 @@ class MQTTController:
             # FIXME: too many if else!
             cmd = topic[len(conf.topic) + 1:]
             if cmd == 'stop':
-                controller.__zone_queue.put((ZoneAction.STOP, 0))
+                state.run_zone_action((ZoneAction.STOP, 0))
             elif cmd == 'cycle':
-                controller.__zone_queue.put((ZoneAction.RUN_CYCLE, 0))
+                state.run_zone_action((ZoneAction.RUN_CYCLE, 0))
             elif cmd.startswith('zone'):
                 try:
                     zone = int(cmd[5:6])
@@ -81,9 +80,9 @@ class MQTTController:
                         elif action == 'set' and state.active_controller_mode() is ControllerMode.MQTT:
                             logging.info('Zone {0} received set {1}.'.format(zone, status))
                             if status == CMD.ON.name:
-                                controller.__zone_queue.put((ZoneAction.ZONE, int(zone)))
+                                state.run_zone_action((ZoneAction.ZONE, int(zone)))
                             else:
-                                controller.__zone_queue.put((ZoneAction.STOP, 0))
+                                state.run_zone_action((ZoneAction.STOP, 0))
                         elif action == 'available':
                             logging.info('Zone {0} received available status {1}.'.format(zone, status))
                     else:

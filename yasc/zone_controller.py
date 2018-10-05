@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from threading import Thread, Event
-from yasc.utils import CONFIG, state, ZoneAction, in_production
+from yasc.utils import CONFIG, state, ZoneAction, in_production, ControllerMode
 from datetime import datetime, timedelta
 from time import sleep
 import logging
@@ -100,10 +100,9 @@ class CycleRunner(Thread):
 
 
 class ZoneController(Thread):
-    def __init__(self, zone_queue):
+    def __init__(self):
         Thread.__init__(self, name='Zone Controller')
         self.__stop = Event()
-        self.__zone_queue = zone_queue
         self.__manual_runner = None
         self.__cycle_runner = None
 
@@ -135,8 +134,12 @@ class ZoneController(Thread):
             self.__stop.set()
         self.__stop_manual_runner()
         self.__stop_cycle_runner()
-        self.__zone_queue.put((ZoneAction.TERMINATE, 0))
+        state.run_zone_action((ZoneAction.TERMINATE, 0))
         self.join()
+
+    def control_mode_changed(self, mode):
+        if mode is ControllerMode.OFF:
+            state.run_zone_action((ZoneAction.STOP, 0))
 
     def __get_zone_index(self, zone):
         for index, zone_info in enumerate(CONFIG.active_zones):
@@ -150,63 +153,40 @@ class ZoneController(Thread):
                 return True
         return False
 
+    def __queue_processor(self, queue):
+        action_type, event_value = queue.get()
+        logging.debug('Received action {0} with event value {1}.'.format(action_type, event_value))
+        self.__stop_manual_runner()
+        self.__stop_cycle_runner()
+        if action_type in [ZoneAction.TERMINATE, ZoneAction.STOP]:
+            # Leave dummy for now
+            pass
+        elif action_type == ZoneAction.RUN_CYCLE:
+            self.__cycle_runner = CycleRunner(CONFIG.default_interval)
+            self.__cycle_runner.start()
+        elif action_type == ZoneAction.NEXT:
+            current_active = get_active_zone()
+            current_index = self.__get_zone_index(current_active)
+            next_index = current_index + 1
+            if -1 < next_index < len(CONFIG.active_zones):
+                zone = CONFIG.active_zones[next_index].zone
+                self.__manual_runner = ManualRunner(zone, CONFIG.default_interval)
+                self.__manual_runner.start()
+            else:
+                logging.debug('Next index {0} outside active zone range. Stop yasc.'.format(next_index))
+        elif action_type == ZoneAction.ZONE:
+            if self.__zone_in_active_zones(event_value):
+                self.__manual_runner = ManualRunner(event_value, CONFIG.default_interval)
+                self.__manual_runner.start()
+            else:
+                logging.error('Zone {0} is not an active zone!'.format(event_value))
+
+        queue.task_done()
+
     def run(self):
         logging.info('Zone Controller started')
         while not self.__stop.is_set():
-            do_terminate = False
-            do_stop = False
-            run_cycle = False
-            zone_set = 0
-            moves = 0
-
-            # TODO: This is crap... simplify this logic!
-            while True:
-                action_type, event_value = self.__zone_queue.get()
-                logging.debug('Received action {0} with event value {1}.'.format(action_type, event_value))
-                if action_type == ZoneAction.TERMINATE:
-                    do_terminate = True
-                elif action_type == ZoneAction.STOP:
-                    do_stop = True
-                elif action_type == ZoneAction.RUN_CYCLE:
-                    run_cycle = True
-                elif action_type == ZoneAction.NEXT:
-                    moves += 1
-                elif action_type == ZoneAction.ZONE:
-                    zone_set = event_value
-                self.__zone_queue.task_done()
-                if self.__zone_queue.empty():
-                    break
-
-            self.__stop_manual_runner()
-            self.__stop_cycle_runner()
-            if do_terminate:
-                stop_sprinkler()
-                state.run_off()
-                break
-            elif do_stop:
-                stop_sprinkler()
-                state.run_off()
-            elif run_cycle:
-                self.__cycle_runner = CycleRunner(CONFIG.default_interval)
-                self.__cycle_runner.start()
-            elif zone_set > 0:
-                if self.__zone_in_active_zones(zone_set):
-                    self.__manual_runner = ManualRunner(zone_set, CONFIG.default_interval)
-                    self.__manual_runner.start()
-                else:
-                    logging.error('Zone {0} is not an active zone!'.format(zone_set))
-            elif moves > 0:
-                logging.debug('Moving by {0} zones.'.format(moves))
-                current_active = get_active_zone()
-                current_index = self.__get_zone_index(current_active)
-                next_index = current_index + moves
-                if -1 < next_index < len(CONFIG.active_zones):
-                    zone = CONFIG.active_zones[next_index].zone
-                    self.__manual_runner = ManualRunner(zone, CONFIG.default_interval)
-                    self.__manual_runner.start()
-                else:
-                    logging.debug('Next index {0} outside active zone range. Stop yasc.'.format(next_index))
-                    stop_sprinkler()
+            state.process_queue(self.__queue_processor)
 
         logging.info('Zone Controller stopped')
 

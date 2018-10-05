@@ -3,22 +3,22 @@
     {
       "zone": 1,
       "name": "Zone 1",
-      "interval": 1
+      "interval": 5
     },
     {
       "zone": 2,
       "name": "Zone 2",
-      "interval": 2
+      "interval": 5
     },
     {
       "zone": 3,
       "name": "Zone 3",
-      "interval": 3
+      "interval": 5
     },
     {
       "zone": 4,
       "name": "Zone 4",
-      "interval": 4
+      "interval": 5
     },
     {
       "zone": 5,

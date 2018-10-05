@@ -45,9 +45,8 @@ def parse_config():
 
 class LocalController(Thread):
 
-    def __init__(self, zone_queue):
+    def __init__(self):
         Thread.__init__(self, name='Local Timer')
-        self.__zone_queue = zone_queue
         self.__stop = Event()
         self.__days, self.__start_time = parse_config()
         self.__scheduler = Scheduler()
@@ -61,7 +60,7 @@ class LocalController(Thread):
         return self.__scheduler.next_run
 
     def __run_cycle(self):
-        self.__zone_queue.put((ZoneAction.RUN_CYCLE, 0))
+        state.run_zone_action((ZoneAction.RUN_CYCLE, 0))
 
     def __schedule_job(self):
         if in_production():
