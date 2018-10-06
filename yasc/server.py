@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import cherrypy
+from cherrypy.lib import auth_digest
 from yasc.utils import CONFIG, state, APP_LOG_HANDLER, GLOBAL_LOG_HANDLER, \
     ControllerMode, ZoneAction, in_production, get_project_path
 from yasc.__init__ import __version__
@@ -132,9 +133,17 @@ def start_server(start_callback, stop_callback):
     app.api.run_cycle = ApiRunCycle()
     app.api.stop_sprinkler = ApiStopSprinkler()
 
+    user = {CONFIG.server.user: CONFIG.server.password}
+
     cherrypy.config.update({'log.screen': False,
                             'log.access_file': '',
-                            'log.error_file': ''})
+                            'log.error_file': '',
+                            'tools.auth_digest.on': True,
+                            'tools.auth_digest.realm': 'localhost',
+                            'tools.auth_digest.get_ha1': auth_digest.get_ha1_dict_plain(user),
+                            'tools.auth_digest.key': 'b361e37146791cfb',
+                            'tools.auth_digest.accept_charset': 'UTF-8'
+                            })
     logging.getLogger("cherrypy").propagate = False
     logging.getLogger("cherrypy.error").addHandler(GLOBAL_LOG_HANDLER)
 
