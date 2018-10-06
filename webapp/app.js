@@ -40,6 +40,11 @@ update_status = function() {
         $('#controller-mode').html(data.controller_mode)
         $('#active-controller-mode').html(data.active_controller_mode)
         $('#environment').html(window.environment)
+        if (data.mqtt_connected) {
+            $('#mqtt').html('connected')
+        } else {
+            $('#mqtt').html('disconnected')
+        }
         if (data.active_controller_mode == "LOCAL") {
             $('#next_run').html(data.next_run)
         } else {

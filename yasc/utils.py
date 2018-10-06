@@ -214,6 +214,10 @@ class _State(object):
             else:
                 return ControllerMode(self.__mode.value)
 
+    def control_mode(self):
+        with self.__lock_mode:
+            return ControllerMode(self.__mode.value)
+
     def run_zone_action(self, action):
         self.__zone_queue.put(action)
 
@@ -231,17 +235,16 @@ class _State(object):
             logging.warning('MQTT status callback not set. Returning False.')
             return False
 
-    def control_mode(self):
-        with self.__lock_mode:
-            return ControllerMode(self.__mode.value)
+    def control_mode_changed(self):
+        for callback in self.__mode_changed_callback:
+            callback()
 
     def set_control_mode(self, mode):
         with self.__lock_mode:
             if self.__mode.value != mode.value:
                 self.__mode.value = mode.value
                 self.__save_status()
-                for callback in self.__mode_changed_callback:
-                    callback(ControllerMode(self.__mode.value))
+        self.control_mode_changed()
 
     def zone_on(self, zone):
         with self.__lock_run_state:

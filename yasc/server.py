@@ -35,7 +35,8 @@ class ApiStatus(object):
                 'active_controller_mode': state.active_controller_mode().name,
                 'controller_mode': state.control_mode().name,
                 'next_run': state.next_run().strftime('%a %d %b %Y at %H:%M'),
-                'now': datetime.now().strftime('%H:%M:%S')}
+                'now': datetime.now().strftime('%H:%M:%S'),
+                'mqtt_connected': state.mqtt_connected()}
 
 
 @cherrypy.expose

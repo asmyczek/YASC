@@ -4,7 +4,7 @@
     <link rel="icon" href="static/favicon.png"/>
     <link rel="stylesheet" type="text/css" href="static/style.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
-    <script src="static/app.js" type="text/javascript"></script>
+    <script src="static/app.js?v=1" type="text/javascript"></script>
     <script type="text/javascript" language="JavaScript">
         $(document).ready(function() {
             $.get('api/config').done(loadConfig);
@@ -34,6 +34,7 @@
         Active Zone: <span id="activezone">None</span>
         Mode: <span id="active-controller-mode">None</span>
         Environment: <span id="environment">None</span>
+        MQTT: <span id="mqtt">None</span>
     </div>
     <div>
         Next run scheduled for: <span id="next_run"></span><span id="now"></span>

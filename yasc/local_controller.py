@@ -73,7 +73,8 @@ class LocalController(Thread):
             self.__scheduler.every(3).minutes.do(self.__run_cycle)
         logging.info('Next run scheduled for {0}.'.format(self.__scheduler.next_run))
 
-    def control_mode_changed(self, mode):
+    def control_mode_changed(self):
+        mode = state.active_controller_mode()
         if mode is not ControllerMode.LOCAL:
             self.__scheduler.clear()
         elif mode is ControllerMode.LOCAL:

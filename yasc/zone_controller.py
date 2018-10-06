@@ -137,8 +137,8 @@ class ZoneController(Thread):
         state.run_zone_action((ZoneAction.TERMINATE, 0))
         self.join()
 
-    def control_mode_changed(self, mode):
-        if mode is ControllerMode.OFF:
+    def control_mode_changed(self):
+        if state.active_controller_mode() is ControllerMode.OFF:
             state.run_zone_action((ZoneAction.STOP, 0))
 
     def __get_zone_index(self, zone):

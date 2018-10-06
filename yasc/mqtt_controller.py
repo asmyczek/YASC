@@ -95,7 +95,6 @@ class MQTTController:
         def on_connect(client, user_data, flags, rc):
             if rc == 0:
                 logging.info('Connected to mqtt broker.')
-                user_data['connected'] = True
                 controller = user_data['controller']
                 controller.send_available_state()
 
@@ -107,15 +106,24 @@ class MQTTController:
                 self.__client.subscribe('{0}/cycle'.format(self.__conf.topic), qos=2)
                 self.__client.subscribe('{0}/stop'.format(self.__conf.topic), qos=2)
 
+                user_data['connected'] = True
+                state.control_mode_changed()
+
                 led_on(2)
             else:
                 logging.error('Unable to establish connection. RS={0}'.format(rc))
                 user_data['connected'] = False
+
+                state.control_mode_changed()
+
                 led_off(2)
 
         def on_disconnect(mqttc, user_data, rc):
             logging.info('Disconnected from mqtt broker.')
             user_data['connected'] = False
+
+            state.control_mode_changed()
+
             led_off(2)
 
         def on_publish(mqttc, user_data, mid):
