@@ -7,8 +7,8 @@ for under 20 Euro
 Controller
 ----------
 
-I started this project to get my kids interested in electronic circuits and teach them how to solder, which these days is a life skill :) 
-Now this basic sprinkler system waters my garden and is fully controlled by Homeassistant and Google Assistant. Extensions to come, a rain gauge is on the way.  
+The reason for starting this project was to get my kids interested in electronic circuits and to teach them how to solder those, which these days is a life skill :) 
+Now this basic controller irrigates my garden and is fully controlled by Homeassistant. And new extensions are on the way...
 
 ![](https://lh3.googleusercontent.com/a6N789xV5oDt8jh0Qn5VYW2zBy4iyal2yQnXuPkcXrr1Y-X9QVDBmpfnKf4J1FpvvP2emqxOHeC5Iscv36OH9ilmP9xmun3PU4-e8W9p7OVMtAFqipfhIe0-IHOGxOyYf9NBVXxesiOt3gdePdRPUyLi8VJmB6OEnxcw8TI8Sy0saU-NhPiNBGtnKGMOZiHQQCD04aIwopvchUiga4I-9O5TvQ-OsDC941GfZiYC28I2fdA3q6-tMx_3BzV8F1mOjv2P2-KemvZezjiqVP2uQLiHZmOz3CrlIuizNn8OnNKwYYLWao4ZsyccS7k8eAHIPIq2zTIewFZGzVZkJEZXmK2r-aOzKwQIDKuvvsPR5AE9BO8Lk8ETkdQdZz4tynnYgNd01SUvYTTJb7biQb2W2jxTAwtE_vRUVSqSSHIddZB710GpwMwjU4zZ49fU8fkBurUyMjE-XxZiT8VmlS3AeKS_4btxxjPTPXSEPh_YVLOWDRH1Veu3IMH3cp4hq8zXFIFQ0wwIGKISenruc1ivqITLiELr1Pv5Ki8Ov3S07fboVbvW1QCr9k1-R8acBrEXZBRW5HVCM8S6TgEDSDDrUuPULfiGw9fXvwtt41qfCIU3VRRPYbkBi21r9YAyh0-G7k5AjkkTCRvivRztbCSFQKYY84AyZQQu4kZgJNAYB5ryY-5z-WhOmmP3qQ=w798-h520-no)
 
