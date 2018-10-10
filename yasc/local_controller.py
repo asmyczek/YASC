@@ -63,6 +63,7 @@ class LocalController(Thread):
         state.run_zone_action((ZoneAction.RUN_CYCLE, 0))
 
     def __schedule_job(self):
+        self.__scheduler.clear()
         if in_production():
             for day in self.__days:
                 job = Job(1, self.__scheduler)
