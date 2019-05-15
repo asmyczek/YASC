@@ -129,7 +129,7 @@ class MQTTController:
         def on_publish(mqttc, user_data, mid):
             logging.debug('Data published with mid {0}.'.format(mid))
 
-        self.__client = paho.Client(self.__conf.client_name, transport='websockets')
+        self.__client = paho.Client(self.__conf.client_name)
         self.__client.username_pw_set(self.__conf.user, password=self.__conf.password)
         self.__client.user_data_set(self.__user_data)
 
